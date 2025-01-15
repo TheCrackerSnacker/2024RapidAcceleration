@@ -34,7 +34,7 @@ public final class Constants
     public static final CANSparkMax rightGearbox2 = new CANSparkMax(9, MotorType.kBrushless);
     public static final DigitalInput topLimitSwitch = new DigitalInput(4);
     public static final DigitalInput bottomLimitSwitch = new DigitalInput(1);
-    public static final Encoder primaryNeckEncoder = new Encoder(2, 3);
+    public static final Encoder primaryNeckEncoder = new Encoder(2,   3);
     public static final Encoder secondaryNeckEncoder = new Encoder(6, 7);
   }
 
@@ -44,6 +44,16 @@ public final class Constants
     public static final PWMSparkMax shooterTopMotor = new PWMSparkMax(1);
     public static final PWMSparkMax shooterBottomMotor = new PWMSparkMax(3);
     public static final DigitalInput intakeLimitSwitch = new DigitalInput(0);
+  }
+
+  public static final class ElevatorConstants {
+    public static final PIDConstants ELEVATOR_PID = new PIDConstants(0,0,0);
+    public enum ElevatorLevel {
+      L1,
+      L2,
+      L3,
+      L4
+    }
   }
 
   public static final class ClimberConstants {
