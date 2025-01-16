@@ -19,7 +19,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                                                                 ElevatorConstants.ELEVATOR_PID.kI,
                                                                 ElevatorConstants.ELEVATOR_PID.kD);
 
-    private static final double[] setpoints = {0, 1000, 2000, 3000};
+    private static final double[] setpoints = {0, 0, -6000, -23000};
 
     private double getElevatorLevelSetpoint(ElevatorConstants.ElevatorLevel level) {
         switch (level){
