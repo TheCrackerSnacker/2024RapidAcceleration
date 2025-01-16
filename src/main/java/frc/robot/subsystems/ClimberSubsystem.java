@@ -7,7 +7,7 @@ import frc.robot.Constants.ClimberConstants;
 public class ClimberSubsystem extends SubsystemBase {
     
     // Define Empty CANSparkMax Motor Controller Object
-    private final PWMSparkMax climberMotor = ClimberConstants.climberMotor;;
+    private final PWMSparkMax climberMotor = ClimberConstants.climberMotor;
 
     public void ClimberUp() {
         // Run Climber Up when command is called
