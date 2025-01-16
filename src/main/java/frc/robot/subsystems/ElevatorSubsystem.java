@@ -40,24 +40,19 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorPID.setSetpoint(getElevatorLevelSetpoint(level));
     }
 
-    public Command raiseElevatorToL1Command() {
-        return run(() -> raiseElevatorToLevel(ElevatorLevel.L1));
+    public void resetEncoder() {
+        heightEncoder.reset();
     }
 
-    public Command raiseElevatorToL2Command() {
-        return run(() -> raiseElevatorToLevel(ElevatorLevel.L2));
+    public void moveElevatorUp() {
+        elevatorMotor.set(1);
     }
 
-    public Command raiseElevatorToL3Command() {
-        return run(() -> raiseElevatorToLevel(ElevatorLevel.L3));
+    public Command resetEncoderCommand() {
+        return runOnce(() -> resetEncoder());
     }
 
-    public Command raiseElevatorToL4Command() {
-        return run(() -> raiseElevatorToLevel(ElevatorLevel.L4));
-    }
-
-    @Override
-    public void periodic() {
+    public void maintainLevel() {
         elevatorMotor.set(elevatorPID.calculate(heightEncoder.get()));
     }
 }
