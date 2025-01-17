@@ -21,6 +21,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private static final double[] setpoints = {0, 0, -6000, -23000};
 
+    private boolean pidOn = false;
+
     private double getElevatorLevelSetpoint(ElevatorConstants.ElevatorLevel level) {
         switch (level){
             case L1:
@@ -34,6 +36,10 @@ public class ElevatorSubsystem extends SubsystemBase {
             default:
             return -1;
         }
+    }
+
+    public void setPIDEnabled(boolean enabled) {
+        pidOn = enabled;
     }
 
     public void raiseElevatorToLevel(ElevatorConstants.ElevatorLevel level) {
@@ -54,6 +60,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorPID.setSetpoint(heightEncoder.get());
     }
 
+    public Command togglePIDEnabledCommand() {
+        return runOnce(() -> setPIDEnabled(!pidOn));
+    }
+
     public Command moveElevatorUpCommand() {
         return run(() -> moveElevatorUp());
     }
@@ -67,6 +77,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void maintainLevel() {
+        if (!pidOn) return;
         elevatorMotor.set(elevatorPID.calculate(heightEncoder.get()));
     }
 }

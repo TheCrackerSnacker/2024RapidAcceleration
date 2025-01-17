@@ -77,16 +77,11 @@ public class RobotContainer
     // Driver Controller
     driverXbox.back().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
+    driverXbox.b().onTrue(elevatorSubsystem.togglePIDEnabledCommand());   
     driverXbox.x().onTrue(elevatorSubsystem.resetEncoderCommand());
 
-    //driverXbox.y().whileTrue(new NeckUp(primarySubsystem));
-    //.y().whileFalse(new NeckStop(primarySubsystem));
-    driverXbox.a().whileTrue(elevatorSubsystem.moveElevatorDownCommand());    
-    
+    driverXbox.a().whileTrue(elevatorSubsystem.moveElevatorDownCommand());        
     driverXbox.y().whileTrue(elevatorSubsystem.moveElevatorUpCommand());
-    
-    driverXbox.povDown().whileTrue(new ClimberDown(climberSubsystem));
-    driverXbox.povDown().whileFalse(new ClimberStop(climberSubsystem));
     
     driverXbox.povUp().onTrue(new RaiseElevatorToLevel(elevatorSubsystem, ElevatorLevel.L1));
     driverXbox.povRight().onTrue(new RaiseElevatorToLevel(elevatorSubsystem, ElevatorLevel.L2));

@@ -47,7 +47,7 @@ public final class Constants
   }
 
   public static final class ElevatorConstants {
-    public static final PIDConstants ELEVATOR_PID = new PIDConstants(0,0,0);
+    public static final PIDConstants ELEVATOR_PID = new PIDConstants(0, 0, 0);
     public enum ElevatorLevel {
       L1,
       L2,

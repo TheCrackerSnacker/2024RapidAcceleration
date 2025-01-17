@@ -5,14 +5,15 @@ import frc.robot.subsystems.ElevatorSubsystem;
 
 public class MaintainElevatorLevel extends Command{
     
-    private final ElevatorSubsystem subsystem;
+    private final ElevatorSubsystem elevatorSubsystem;
 
     public MaintainElevatorLevel(ElevatorSubsystem subsystem) {
-        this.subsystem = subsystem;
+        this.elevatorSubsystem = subsystem;
+        addRequirements(subsystem);
     }
 
     @Override
     public void execute() {
-        subsystem.maintainLevel();
+        elevatorSubsystem.maintainLevel();
     }
 }
