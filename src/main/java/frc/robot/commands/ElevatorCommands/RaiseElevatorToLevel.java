@@ -21,11 +21,6 @@ public class RaiseElevatorToLevel extends Command {
     }
 
     @Override
-    public void execute() {
-        elevatorSubsystem.maintainLevel();
-    }
-
-    @Override
     public boolean isFinished() {
         return false;
     }

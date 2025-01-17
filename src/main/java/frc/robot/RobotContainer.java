@@ -16,6 +16,7 @@ import frc.robot.commands.AutoCommands.*;
 import frc.robot.commands.BeakCommands.Intake.*;
 import frc.robot.commands.BeakCommands.Shooter.*;
 import frc.robot.commands.ClimberCommands.*;
+import frc.robot.commands.ElevatorCommands.MaintainElevatorLevel;
 import frc.robot.commands.ElevatorCommands.RaiseElevatorToLevel;
 import frc.robot.commands.PrimaryCommands.ManualControl.*;
 import frc.robot.commands.PrimaryCommands.PresetPositions.*;
@@ -67,6 +68,7 @@ public class RobotContainer
         primarySubsystem.returnCamera()
     );
 
+    elevatorSubsystem.setDefaultCommand(new MaintainElevatorLevel(elevatorSubsystem));
     drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocityAprilTagAlignment);
   }
 
@@ -75,16 +77,13 @@ public class RobotContainer
     // Driver Controller
     driverXbox.back().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
-    driverXbox.y().onTrue(elevatorSubsystem.resetEncoderCommand());
+    driverXbox.x().onTrue(elevatorSubsystem.resetEncoderCommand());
 
     //driverXbox.y().whileTrue(new NeckUp(primarySubsystem));
     //.y().whileFalse(new NeckStop(primarySubsystem));
-    driverXbox.a().whileTrue(new NeckDown(primarySubsystem));
-    driverXbox.a().whileFalse(new NeckStop(primarySubsystem));
+    driverXbox.a().whileTrue(elevatorSubsystem.moveElevatorDownCommand());    
     
-    
-    driverXbox.y().whileTrue(new ClimberUp(climberSubsystem));
-    driverXbox.y().whileFalse(new ClimberStop(climberSubsystem));
+    driverXbox.y().whileTrue(elevatorSubsystem.moveElevatorUpCommand());
     
     driverXbox.povDown().whileTrue(new ClimberDown(climberSubsystem));
     driverXbox.povDown().whileFalse(new ClimberStop(climberSubsystem));

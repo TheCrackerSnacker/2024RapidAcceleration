@@ -46,6 +46,20 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void moveElevatorUp() {
         elevatorMotor.set(1);
+        elevatorPID.setSetpoint(heightEncoder.get());
+    }
+
+    public void moveElevatorDown() {
+        elevatorMotor.set(-1);
+        elevatorPID.setSetpoint(heightEncoder.get());
+    }
+
+    public Command moveElevatorUpCommand() {
+        return run(() -> moveElevatorUp());
+    }
+
+    public Command moveElevatorDownCommand() {
+        return run(() -> moveElevatorDown());
     }
 
     public Command resetEncoderCommand() {
