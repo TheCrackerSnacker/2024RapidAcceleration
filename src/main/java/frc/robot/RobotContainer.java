@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.subsystems.*;
@@ -24,6 +25,7 @@ import frc.robot.commands.PrimaryCommands.Vision.*;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import java.io.File;
+import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -74,20 +76,28 @@ public class RobotContainer
 
   private void configureBindings()
   {
+    BooleanSupplier elevatorBottomLSPressedSupplier = elevatorSubsystem::isBottomLimitSwitchPressed;
+    Trigger elevatorBottomLSPressedTrigger = new Trigger(elevatorBottomLSPressedSupplier);
+    elevatorBottomLSPressedTrigger.onTrue(elevatorSubsystem.resetEncoderCommand());
+
+    BooleanSupplier elevatorTopLSPressedSupplier = elevatorSubsystem::isTopLimitSwitchPressed;
+    Trigger elevatorTopLSPressedTrigger = new Trigger(elevatorTopLSPressedSupplier);
+    elevatorTopLSPressedTrigger.onTrue(elevatorSubsystem.configureSetpointForTopOfElevatorCommand());
+
     // Driver Controller
     driverXbox.back().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
     driverXbox.b().onTrue(elevatorSubsystem.togglePIDEnabledCommand());   
     driverXbox.x().onTrue(elevatorSubsystem.resetEncoderCommand());
 
-    driverXbox.a().whileTrue(elevatorSubsystem.moveElevatorDownCommand());        
-    driverXbox.y().whileTrue(elevatorSubsystem.moveElevatorUpCommand());
+    driverXbox.a().onTrue(elevatorSubsystem.moveElevatorDownCommand());        
+    driverXbox.y().onTrue(elevatorSubsystem.moveElevatorUpCommand());
     
     driverXbox.povUp().onTrue(new RaiseElevatorToLevel(elevatorSubsystem, ElevatorLevel.L1));
     driverXbox.povRight().onTrue(new RaiseElevatorToLevel(elevatorSubsystem, ElevatorLevel.L2));
     driverXbox.povDown().onTrue(new RaiseElevatorToLevel(elevatorSubsystem, ElevatorLevel.L3));
     driverXbox.povLeft().onTrue(new RaiseElevatorToLevel(elevatorSubsystem, ElevatorLevel.L4));
-
+    
     // Auxilary Controller
     auxXbox.back().onTrue(new ManualControlEnabled(primarySubsystem));
     auxXbox.start().onTrue(new ManualControlDisabled(primarySubsystem));
