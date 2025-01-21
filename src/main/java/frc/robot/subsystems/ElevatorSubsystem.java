@@ -137,7 +137,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                 setSetpoint(heightEncoder.get());
             }
             // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a positive value
-            if (getCurrentPIDController().calculate(getSetpoint()) > 0) {
+            if (getCurrentPIDController().calculate(getSetpoint()) > 0 || elevatorMotor.get() > 0) {
                 elevatorMotor.set(0);
             }
             else {
@@ -152,7 +152,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                 setSetpoint(heightEncoder.get());
             }
             // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a negative value
-            if (getCurrentPIDController().calculate(getSetpoint()) < 0) {
+            if (getCurrentPIDController().calculate(getSetpoint()) < 0 || elevatorMotor.get() < 0) {
                 elevatorMotor.set(0);
             }
             else {
