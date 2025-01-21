@@ -61,6 +61,14 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorPID.setSetpoint(setpoint);
     }
 
+    public double getSetpoint() {
+        return elevatorPID.getSetpoint();
+    }
+
+    private PIDController getCurrentPIDController() {
+        return elevatorPID;
+    }
+
     public void moveElevatorUp() {
         if (pidOn) {
             elevatorPID.setSetpoint(elevatorPID.getSetpoint() - ElevatorConstants.elevatorManualMovementSpeed);
@@ -113,6 +121,45 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorMotor.set(0);
         if (!pidOn) return;
         //elevatorMotor.set(elevatorPID.calculate(heightEncoder.get()));
+    }
+
+    /**PAY ATTENTION!!!!! This method assumes that moving the elevator up is done by setting the motor speed to a positive value, and assumes that a higher encoder value means that the elevator is higher.*/
+    public void runPID() {
+
+        if (isTopLimitSwitchPressed() && isBottomLimitSwitchPressed()) {
+            elevatorMotor.set(0);
+            return;
+        }
+
+        if (isTopLimitSwitchPressed()) {
+
+            if (getSetpoint() > heightEncoder.get()) {
+                setSetpoint(heightEncoder.get());
+            }
+            // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a positive value
+            if (getCurrentPIDController().calculate(getSetpoint()) > 0) {
+                elevatorMotor.set(0);
+            }
+            else {
+                elevatorMotor.set(getCurrentPIDController().calculate(getSetpoint()));
+            }
+            return;
+        }
+
+        if (isBottomLimitSwitchPressed()) {
+            resetEncoder();
+            if (getSetpoint() < heightEncoder.get()) {
+                setSetpoint(heightEncoder.get());
+            }
+            // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a negative value
+            if (getCurrentPIDController().calculate(getSetpoint()) < 0) {
+                elevatorMotor.set(0);
+            }
+            else {
+                elevatorMotor.set(getCurrentPIDController().calculate(getSetpoint()));
+            }
+            return;
+        }
     }
 
     public void periodic() {
