@@ -76,14 +76,14 @@ public class RobotContainer
 
   private void configureBindings()
   {
-    BooleanSupplier elevatorBottomLSPressedSupplier = elevatorSubsystem::isBottomLimitSwitchPressed;
+    /*BooleanSupplier elevatorBottomLSPressedSupplier = elevatorSubsystem::isBottomLimitSwitchPressed;
     Trigger elevatorBottomLSPressedTrigger = new Trigger(elevatorBottomLSPressedSupplier);
     elevatorBottomLSPressedTrigger.onTrue(elevatorSubsystem.resetEncoderCommand());
 
     BooleanSupplier elevatorTopLSPressedSupplier = elevatorSubsystem::isTopLimitSwitchPressed;
     Trigger elevatorTopLSPressedTrigger = new Trigger(elevatorTopLSPressedSupplier);
     elevatorTopLSPressedTrigger.onTrue(elevatorSubsystem.configureSetpointForTopOfElevatorCommand());
-
+*/
     // Driver Controller
     driverXbox.back().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
