@@ -14,6 +14,6 @@ public class MaintainElevatorLevel extends Command{
 
     @Override
     public void execute() {
-        elevatorSubsystem.maintainLevel();
+        elevatorSubsystem.runPID();
     }
 }

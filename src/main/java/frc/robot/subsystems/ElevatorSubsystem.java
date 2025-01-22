@@ -25,7 +25,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private static final double[] setpoints = {0, 0, 3, 11.5};
 
-    private boolean pidOn = false;
+    private boolean pidOn = true;
 
     private double getElevatorLevelSetpoint(ElevatorConstants.ElevatorLevel level) {
         switch (level){
@@ -62,6 +62,7 @@ public class ElevatorSubsystem extends SubsystemBase {
      * Resets the encoder count to 0.
      */
     public void resetEncoder() {
+        System.out.println("Resetting Encoder");
         heightEncoder.reset();
     }
 
@@ -83,21 +84,21 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void moveElevatorUp() {
         if (pidOn) {
-            elevatorPID.setSetpoint(elevatorPID.getSetpoint() - ElevatorConstants.elevatorManualMovementSpeed);
+            elevatorPID.setSetpoint(elevatorPID.getSetpoint() + ElevatorConstants.elevatorManualMovementSpeed);
         }
         else {
             elevatorMotor.set(-1);
-            setSetpoint(heightEncoder.get());
+            setSetpoint(getEncoderValue());
         }
     }
 
     public void moveElevatorDown() {
         if (pidOn) {
-            elevatorPID.setSetpoint(elevatorPID.getSetpoint() + ElevatorConstants.elevatorManualMovementSpeed);
+            elevatorPID.setSetpoint(elevatorPID.getSetpoint() - ElevatorConstants.elevatorManualMovementSpeed);
         }
         else {
             elevatorMotor.set(1);
-            setSetpoint(heightEncoder.get());
+            setSetpoint(getEncoderValue());
         }
     }
 
@@ -148,12 +149,12 @@ public class ElevatorSubsystem extends SubsystemBase {
             if (getSetpoint() > getEncoderValue()) {
                 setSetpoint(getEncoderValue());
             }
-            // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a positive value
-            if (getCurrentPIDController().calculate(getSetpoint()) > 0) {
+            // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a negative value
+            if (getCurrentPIDController().calculate(getSetpoint()) < 0) {
                 elevatorMotor.set(0);
             }
             else {
-                elevatorMotor.set(getCurrentPIDController().calculate(getSetpoint()));
+                elevatorMotor.set(-getCurrentPIDController().calculate(getEncoderValue()));
             }
             return;
         }
@@ -163,29 +164,34 @@ public class ElevatorSubsystem extends SubsystemBase {
             if (getSetpoint() < getEncoderValue()) {
                 setSetpoint(getEncoderValue());
             }
-            // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a negative value
-            if (getCurrentPIDController().calculate(getSetpoint()) < 0) {
+            // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a positive value
+            if (getCurrentPIDController().calculate(getSetpoint()) > 0) {
                 elevatorMotor.set(0);
             }
             else {
-                elevatorMotor.set(getCurrentPIDController().calculate(getSetpoint()));
+                elevatorMotor.set(-getCurrentPIDController().calculate(getEncoderValue()));
             }
             return;
         }
+        System.out.println("Here!");
+        elevatorMotor.set(-getCurrentPIDController().calculate(getEncoderValue()));
     }
     // Test change
     // This method is being used to run safety code which should be executed, no matter what.
     public void periodic() {
-        System.out.println("PID On? "+pidOn+", Setpoint:"+elevatorPID.getSetpoint()+", encoder: "+heightEncoder.get()+", PID output: "+elevatorPID.calculate(heightEncoder.get()));
-    
-        // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a positive value
-        if (isTopLimitSwitchPressed() && elevatorMotor.get() > 0) {
+        System.out.println("PID On? "+pidOn+", Motor Speed: "+elevatorMotor.get()+", Setpoint:"+getSetpoint()+", encoder: "+getEncoderValue()+", PID output: "+elevatorPID.calculate(getEncoderValue()));
+        System.out.println(isTopLimitSwitchPressed());
+        
+        // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a negative value
+        if (isTopLimitSwitchPressed() && elevatorMotor.get() < 0) {
+            System.out.println("Here");
             elevatorMotor.set(0);
         }
            
-        // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a negative value
-        if (isBottomLimitSwitchPressed() && elevatorMotor.get() < 0) {
+        // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a positive value
+        if (isBottomLimitSwitchPressed() && elevatorMotor.get() > 0) {
             elevatorMotor.set(0);
         }
+        
     }
 }
