@@ -51,7 +51,7 @@ public final class Constants
     public static final DigitalInput bottomLimitSwitch = new DigitalInput(9);
     public static final DigitalInput topLimitSwitch = new DigitalInput(8);
 
-    public static final double elevatorManualMovementSpeed = 1000;
+    public static final double elevatorManualMovementSpeed = .5;
 
     public enum ElevatorLevel {
       L1,

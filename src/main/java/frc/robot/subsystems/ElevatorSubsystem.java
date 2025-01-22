@@ -1,22 +1,19 @@
 package frc.robot.subsystems;
 
-import java.util.function.BooleanSupplier;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.NeckConstants;
-import frc.robot.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.ElevatorConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
-
     private final Encoder heightEncoder = NeckConstants.primaryNeckEncoder;
+    private final int encoderCountsPerRot = 2048;
+
     private final PWMSparkMax elevatorMotor = ClimberConstants.climberMotor;
 
     private final DigitalInput topLimitSwitch = ElevatorConstants.topLimitSwitch;
@@ -26,7 +23,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                                                                 ElevatorConstants.ELEVATOR_PID.kI,
                                                                 ElevatorConstants.ELEVATOR_PID.kD);
 
-    private static final double[] setpoints = {0, 0, -6000, -23000};
+    private static final double[] setpoints = {0, 0, 3, 11.5};
 
     private boolean pidOn = false;
 
@@ -53,10 +50,25 @@ public class ElevatorSubsystem extends SubsystemBase {
         elevatorPID.setSetpoint(getElevatorLevelSetpoint(level));
     }
 
+    /**
+     * Gets the normalized encoder value.
+     * @return The encoder reading, in rotations, with increasing positive meaning increasing elevator height.
+     */
+    public double getEncoderValue() {
+        return heightEncoder.get() / encoderCountsPerRot * -1;
+    }
+    
+    /**
+     * Resets the encoder count to 0.
+     */
     public void resetEncoder() {
         heightEncoder.reset();
     }
 
+    /**
+     * Sets the PID height setpoint of the elevator.
+     * @param setpoint The setpoint height, in normalized encoder revolutions, that the elevator will attempt to reach.
+     */
     public void setSetpoint(double setpoint) {
         elevatorPID.setSetpoint(setpoint);
     }
@@ -133,11 +145,11 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         if (isTopLimitSwitchPressed()) {
 
-            if (getSetpoint() > heightEncoder.get()) {
-                setSetpoint(heightEncoder.get());
+            if (getSetpoint() > getEncoderValue()) {
+                setSetpoint(getEncoderValue());
             }
             // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a positive value
-            if (getCurrentPIDController().calculate(getSetpoint()) > 0 || elevatorMotor.get() > 0) {
+            if (getCurrentPIDController().calculate(getSetpoint()) > 0) {
                 elevatorMotor.set(0);
             }
             else {
@@ -148,11 +160,11 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         if (isBottomLimitSwitchPressed()) {
             resetEncoder();
-            if (getSetpoint() < heightEncoder.get()) {
-                setSetpoint(heightEncoder.get());
+            if (getSetpoint() < getEncoderValue()) {
+                setSetpoint(getEncoderValue());
             }
             // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a negative value
-            if (getCurrentPIDController().calculate(getSetpoint()) < 0 || elevatorMotor.get() < 0) {
+            if (getCurrentPIDController().calculate(getSetpoint()) < 0) {
                 elevatorMotor.set(0);
             }
             else {
@@ -162,7 +174,18 @@ public class ElevatorSubsystem extends SubsystemBase {
         }
     }
 
+    // This method is being used to run safety code which should be executed, no matter what.
     public void periodic() {
         System.out.println("PID On? "+pidOn+", Setpoint:"+elevatorPID.getSetpoint()+", encoder: "+heightEncoder.get()+", PID output: "+elevatorPID.calculate(heightEncoder.get()));
+    
+        // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a positive value
+        if (isTopLimitSwitchPressed() && elevatorMotor.get() > 0) {
+            elevatorMotor.set(0);
+        }
+           
+        // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a negative value
+        if (isBottomLimitSwitchPressed() && elevatorMotor.get() < 0) {
+            elevatorMotor.set(0);
+        }
     }
 }
