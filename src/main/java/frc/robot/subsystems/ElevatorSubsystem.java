@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,6 +14,7 @@ import frc.robot.Constants.ElevatorConstants;
 public class ElevatorSubsystem extends SubsystemBase {
     private final Encoder heightEncoder = NeckConstants.primaryNeckEncoder;
 
+    // when set to -1, elevator goes down. when set to 1, elevator goes up.
     private final PWMSparkMax elevatorMotor = ClimberConstants.climberMotor;
 
     private final DigitalInput topLimitSwitch = ElevatorConstants.topLimitSwitch;
@@ -21,13 +23,19 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final PIDController elevatorPID = new PIDController(ElevatorConstants.ELEVATOR_PID.kP,
                                                                 ElevatorConstants.ELEVATOR_PID.kI,
                                                                 ElevatorConstants.ELEVATOR_PID.kD);
+    /**@return The height encoder, with increasing elevator height being an encoder value closer to positive infinity. */
+    private double readEncoderNormalized() {
+        return heightEncoder.get() * -1;
+    }
 
     public void moveElevatorUp() {
         elevatorPID.setSetpoint(elevatorPID.getSetpoint() + ElevatorConstants.elevatorManualMovementSpeed);
+        //elevatorMotor.set(1);
     }
 
     public void moveElevatorDown() {
         elevatorPID.setSetpoint(elevatorPID.getSetpoint() - ElevatorConstants.elevatorManualMovementSpeed);
+        //elevatorMotor.set(-1);
     }
 
     public boolean isTopLimitSwitchPressed() {
@@ -44,9 +52,10 @@ public class ElevatorSubsystem extends SubsystemBase {
      * and assumes that a lowers encoder value means that the elevator is higher.
      */
     public void runPID() {
-
+        elevatorMotor.set(0);
+        
         if (isTopLimitSwitchPressed() && isBottomLimitSwitchPressed()) {
-            elevatorMotor.set(0);
+            //elevatorMotor.set(0);
             return;
         }
 
@@ -57,7 +66,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             handleBottomLSPressed();
         }
         else {
-            elevatorMotor.set(elevatorPID.calculate(heightEncoder.get())); 
+            elevatorMotor.set(elevatorPID.calculate(readEncoderNormalized())); 
         }
     }
 
@@ -70,7 +79,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             elevatorMotor.set(0);
         }
         else {
-            elevatorMotor.set(elevatorPID.calculate(heightEncoder.get()));
+            elevatorMotor.set(elevatorPID.calculate(readEncoderNormalized()));
         }
     }
 
@@ -85,16 +94,18 @@ public class ElevatorSubsystem extends SubsystemBase {
             elevatorMotor.set(0);
         }
         else {
-            elevatorMotor.set(elevatorPID.calculate(heightEncoder.get()));
+            elevatorMotor.set(elevatorPID.calculate(readEncoderNormalized()));
         }
     }
 
     // This method is being used to run safety code which should be executed, no matter what.
     public void periodic() {
+        if(!DriverStation.isEnabled())
+            return;
         System.out.println( "Motor Speed: "+elevatorMotor.get()+
                             ", Setpoint:"+elevatorPID.getSetpoint()+
-                            ", encoder: "+heightEncoder.get()+
-                            ", PID output: "+elevatorPID.calculate(heightEncoder.get())
+                            ", encoder: "+readEncoderNormalized()+
+                            ", PID output: "+(elevatorPID.calculate(readEncoderNormalized()))
                             );
     }
      

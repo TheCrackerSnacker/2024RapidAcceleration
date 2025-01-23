@@ -47,11 +47,11 @@ public final class Constants
   }
 
   public static final class ElevatorConstants {
-    public static final PIDConstants ELEVATOR_PID = new PIDConstants(0.05, 0, 0);
+    public static final PIDConstants ELEVATOR_PID = new PIDConstants(0.00002, 0, 0);
     public static final DigitalInput bottomLimitSwitch = new DigitalInput(9);
     public static final DigitalInput topLimitSwitch = new DigitalInput(8);
 
-    public static final double elevatorManualMovementSpeed = .5;
+    public static final double elevatorManualMovementSpeed = 3000;
 
     public enum ElevatorLevel {
       L1,
