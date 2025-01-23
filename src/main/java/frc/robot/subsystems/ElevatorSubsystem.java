@@ -84,7 +84,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     private void handleBottomLSPressed() {
-        heightEncoder.reset();
+        //heightEncoder.reset();
 
         if (elevatorPID.getSetpoint() > heightEncoder.get()) {
             elevatorPID.setSetpoint(heightEncoder.get());
@@ -92,6 +92,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a positive value
         if (elevatorPID.calculate(heightEncoder.get()) > 0) {
             elevatorMotor.set(0);
+            heightEncoder.get();
+            heightEncoder.getDistance();
         }
         else {
             elevatorMotor.set(elevatorPID.calculate(readEncoderNormalized()));
