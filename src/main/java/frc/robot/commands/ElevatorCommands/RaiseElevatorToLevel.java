@@ -17,11 +17,11 @@ public class RaiseElevatorToLevel extends Command {
 
     @Override
     public void initialize() {
-        //elevatorSubsystem.raiseElevatorToLevel(level);
+        elevatorSubsystem.raiseElevatorToLevel(level);
     }
 
     @Override
     public boolean isFinished() {
-        return false;
+        return true;
     }
 }

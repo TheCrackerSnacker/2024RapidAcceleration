@@ -1,10 +1,12 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.NeckConstants;
@@ -15,7 +17,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final Encoder heightEncoder = NeckConstants.primaryNeckEncoder;
 
     // when set to -1, elevator goes down. when set to 1, elevator goes up.
-    private final PWMSparkMax elevatorMotor = ClimberConstants.climberMotor;
+    private final CANSparkMax elevatorMotor = ClimberConstants.climberMotor;
 
     private final DigitalInput topLimitSwitch = ElevatorConstants.topLimitSwitch;
     private final DigitalInput bottomLimitSwitch = ElevatorConstants.bottomLimitSwitch;
@@ -23,6 +25,32 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final PIDController elevatorPID = new PIDController(ElevatorConstants.ELEVATOR_PID.kP,
                                                                 ElevatorConstants.ELEVATOR_PID.kI,
                                                                 ElevatorConstants.ELEVATOR_PID.kD);
+
+    private static final double[] setpoints = {0, 0, 6000, 23000};
+
+    public ElevatorSubsystem() {
+        elevatorMotor.setIdleMode(IdleMode.kBrake);
+    }
+
+    private double getElevatorLevelSetpoint(ElevatorConstants.ElevatorLevel level) {
+        switch (level){
+            case L1:
+            return setpoints[0];
+            case L2:
+            return setpoints[1];
+            case L3:
+            return setpoints[2];
+            case L4:
+            return setpoints[3];
+            default:
+            return -1;
+        }
+    }
+
+    public void raiseElevatorToLevel(ElevatorConstants.ElevatorLevel level) {
+        elevatorPID.setSetpoint(getElevatorLevelSetpoint(level));
+    }
+
     /**@return The height encoder, with increasing elevator height being an encoder value closer to positive infinity. */
     private double readEncoderNormalized() {
         return heightEncoder.get() * -1;
@@ -30,12 +58,10 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void moveElevatorUp() {
         elevatorPID.setSetpoint(elevatorPID.getSetpoint() + ElevatorConstants.elevatorManualMovementSpeed);
-        //elevatorMotor.set(1);
     }
 
     public void moveElevatorDown() {
         elevatorPID.setSetpoint(elevatorPID.getSetpoint() - ElevatorConstants.elevatorManualMovementSpeed);
-        //elevatorMotor.set(-1);
     }
 
     public boolean isTopLimitSwitchPressed() {
@@ -47,15 +73,17 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     /**ATTENTION!<p>
-     * This method (and those it calls) assumes that moving the elevator up is done by
-     * setting the motor speed to a negative value,
-     * and assumes that a lowers encoder value means that the elevator is higher.
+     * This method (and handleTopLSPressed and handleBottomLSPressed) assumes that moving the elevator up is done by
+     * setting the motor speed to a positive value,
+     * and assumes that a higher encoder value means that the elevator is higher.
+     * This method executes the PID function, while taking into account limit switches.
+     * It also resets the encoder when the elevator hits the bottom limit switch.
      */
+
     public void runPID() {
-        elevatorMotor.set(0);
-        
+
         if (isTopLimitSwitchPressed() && isBottomLimitSwitchPressed()) {
-            //elevatorMotor.set(0);
+            elevatorMotor.set(0);
             return;
         }
 
@@ -71,46 +99,40 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     private void handleTopLSPressed() {
-        if (elevatorPID.getSetpoint() < heightEncoder.get()) {
-            elevatorPID.setSetpoint(heightEncoder.get());
+        if (elevatorPID.getSetpoint() > readEncoderNormalized()) {
+            elevatorPID.setSetpoint(readEncoderNormalized());
         }
-        // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a negative value
-        if (elevatorPID.calculate(heightEncoder.get()) < 0) {
+
+        // NOTE!!!! This if statement assumes that moving the elevator up is done by setting the motor speed to a positive value
+        var pidOutput = elevatorPID.calculate(readEncoderNormalized());
+
+        if (pidOutput > 0.005) {
             elevatorMotor.set(0);
         }
         else {
-            elevatorMotor.set(elevatorPID.calculate(readEncoderNormalized()));
+            System.out.println("here");
+            elevatorMotor.set(pidOutput);
         }
     }
 
     private void handleBottomLSPressed() {
-        //heightEncoder.reset();
+        heightEncoder.reset();
 
-        if (elevatorPID.getSetpoint() > heightEncoder.get()) {
-            elevatorPID.setSetpoint(heightEncoder.get());
+        if (elevatorPID.getSetpoint() < readEncoderNormalized()) {
+            elevatorPID.setSetpoint(readEncoderNormalized());
         }
-        // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a positive value
-        if (elevatorPID.calculate(heightEncoder.get()) > 0) {
+
+        // NOTE!!!! This if statement assumes that moving the elevator down is done by setting the motor speed to a negative value
+        var pidOutput = elevatorPID.calculate(readEncoderNormalized());
+
+        if (pidOutput < 0.005) {
             elevatorMotor.set(0);
-            heightEncoder.get();
-            heightEncoder.getDistance();
         }
         else {
-            elevatorMotor.set(elevatorPID.calculate(readEncoderNormalized()));
+            elevatorMotor.set(pidOutput);
         }
     }
 
-    // This method is being used to run safety code which should be executed, no matter what.
-    public void periodic() {
-        if(!DriverStation.isEnabled())
-            return;
-        System.out.println( "Motor Speed: "+elevatorMotor.get()+
-                            ", Setpoint:"+elevatorPID.getSetpoint()+
-                            ", encoder: "+readEncoderNormalized()+
-                            ", PID output: "+(elevatorPID.calculate(readEncoderNormalized()))
-                            );
-    }
-     
     // Factory Command Section: Add all command factory methods beneath this line.
 
     public Command moveElevatorUpCommand() {

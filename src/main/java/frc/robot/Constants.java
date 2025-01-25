@@ -47,7 +47,7 @@ public final class Constants
   }
 
   public static final class ElevatorConstants {
-    public static final PIDConstants ELEVATOR_PID = new PIDConstants(0.00002, 0, 0);
+    public static final PIDConstants ELEVATOR_PID = new PIDConstants(0.005, 0.0005, 0.0001);
     public static final DigitalInput bottomLimitSwitch = new DigitalInput(9);
     public static final DigitalInput topLimitSwitch = new DigitalInput(8);
 
@@ -62,7 +62,7 @@ public final class Constants
   }
 
   public static final class ClimberConstants {
-    public static final PWMSparkMax climberMotor = new PWMSparkMax(2);
+    public static final CANSparkMax climberMotor = new CANSparkMax(10, MotorType.kBrushless);
   }
 
   public static final class LEDConstants {
