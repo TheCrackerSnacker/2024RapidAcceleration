@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.*;
 
@@ -26,7 +27,7 @@ public class PrimarySubsystem extends SubsystemBase {
     private final CANSparkMax rightGearbox1 = NeckConstants.rightGearbox1;
     private final CANSparkMax rightGearbox2 = NeckConstants.rightGearbox2;
 
-    private final PWMSparkMax bumperIntakeMotor = BeakConstants.bumperIntakeMotor;
+    private final CANSparkMax bumperIntakeMotor = BeakConstants.bumperIntakeMotor;
     private final PWMSparkMax beakIntakeMotor = BeakConstants.beakIntakeMotor;
     private final PWMSparkMax shooterTopMotor = BeakConstants.shooterTopMotor;
     private final PWMSparkMax shooterBottomMotor = BeakConstants.shooterBottomMotor;
@@ -83,7 +84,37 @@ public class PrimarySubsystem extends SubsystemBase {
     public static String autoName = SmartDashboard.getString("AutoSelector", "DoNothing");
     private CANBusStatus CANInfo = CANBus.getStatus("rio");
 
+    public void lg2On() {
+        System.out.println("working");
+        bumperIntakeMotor.set(1);
+    }
+
+    public void lg2Off() {
+        bumperIntakeMotor.set(0);
+    }
+
+    public Command lg2OnCommand() {
+        return runOnce(() -> lg2On());
+    }
+
+    public Command lg2OffCommand() {
+        return runOnce(() -> lg2Off());
+    }
+
     public void periodic() {
+        
+        if (!DriverStation.isEnabled()) {
+            bumperIntakeMotor.set(0);
+        }
+
+        if (bumperIntakeMotor.getOutputCurrent() >= 20) {
+            bumperIntakeMotor.set(0);
+            System.out.println("Motor Stalled");
+        }
+
+        System.out.println("BumperIntakeCurrent: "+bumperIntakeMotor.getOutputCurrent());
+        System.out.println("BumperIntakeSpeed: "+bumperIntakeMotor.get());
+        
         primaryNeckEncoderValue = primaryNeckEncoder.get();
         
         camera.setLED(VisionLEDMode.kOff);

@@ -81,6 +81,7 @@ public class ElevatorSubsystem extends SubsystemBase {
      */
 
     public void runPID() {
+        System.out.println(elevatorMotor.getOutputCurrent());
 
         if (isTopLimitSwitchPressed() && isBottomLimitSwitchPressed()) {
             elevatorMotor.set(0);
